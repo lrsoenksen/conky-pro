@@ -1,0 +1,146 @@
+-- vim: ts=4 sw=4 noet ai cindent syntax=lua
+--[[
+Conky, a system monitor, based on torsmo
+
+Any original torsmo code is licensed under the BSD license
+
+All code written since the fork of torsmo is licensed under the GPL
+
+Please see COPYING for details
+
+Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
+Copyright (c) 2005-2012 Brenden Matthews, Philip Kovacs, et. al. (see AUTHORS)
+All rights reserved.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+]]
+
+conky.config = {
+    background = true,
+    use_xft = true,
+    font = 'Sans:size=8',
+    xftalpha = 1,
+    update_interval = 1.0,
+    total_run_times = 0,
+    own_window = true,
+    own_window_class = 'Conky',
+    own_window_transparent = true,
+    own_window_type = 'dock',
+    own_window_argb_visual = true,
+    own_window_title = 'System Info',
+    own_window_hints = 'undecorated,below,sticky,skip_taskbar,skip_pager',
+    double_buffer = true,
+    maximum_width = 225,
+    minimum_height = 1375,
+    minimum_width = 225,
+    draw_shades = false,
+    draw_outline = false,
+    draw_borders = false,
+    draw_graph_borders = true,
+    default_color = 'aaaaaa',
+    color1 = 'aaaaaa',
+    color2 = '222222',
+    color3 = 'cccd8a',
+    default_shade_color = '82b343',
+    default_outline_color = 'green',
+    alignment = 'top_right',
+    gap_x = 15,
+    gap_y = 55,
+    no_buffers =true,
+    uppercase =false,
+    default_bar_height = 8,
+    default_bar_width = 120,
+    draw_shades = false,
+    draw_outline = false,
+    draw_borders = false,
+    draw_graph_borders = true,
+    cpu_avg_samples = 2,
+    override_utf8_locale = true,
+    lua_load = '~/.conky/lua/draw_bg.lua',
+    lua_draw_hook_pre = 'draw_bg'
+}
+
+conky.text = [[
+# -- Date/Time and GPU Load fix
+${font size=12}${time %a, %d. %b %Y}${alignr}${time %H:%M}${font}
+# -- System Information
+${voffset 10}${font Sans:size=8:Bold}SYSTEM${font} ${hr 2}
+${voffset -22}${alignr}${exec ~/.conky/scripts/system}${voffset 17}
+${execi 86400 lsb_release -d -c}
+Kernel:  ${alignr}${kernel}
+RAM: ${alignr}$memperc%  ${membar 8,120}
+SWAP: ${alignr}$swapperc%  ${swapbar 8,120}
+Uptime: ${alignr}${uptime}
+${voffset -5}
+
+# -- CPUs Core load
+${font Sans:size=8:Bold}CPU LOAD${font} ${hr 2}
+${voffset -5}
+1, 5, 15 Min.:${alignr}${loadavg}
+${color2}${loadgraph aaaaaa aaaaaa 8}${color}
+${voffset -5}
+${alignr}${voffset -10}${execi 10 cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor} - ${freq_g} GHz${voffset -1}
+${cpubar cpu1 8,51}  ${cpubar cpu2 8,51}  ${cpubar cpu3 8,51}  ${cpubar cpu4 8,51}
+${cpubar cpu5 8,51}  ${cpubar cpu6 8,51}  ${cpubar cpu7 8,51}  ${cpubar cpu8 8,51}
+${cpubar cpu9 8,51}  ${cpubar cpu10 8,51}  ${cpubar cpu11 8,51}  ${cpubar cpu12 8,51}
+${cpubar cpu13 8,51}  ${cpubar cpu14 8,51}  ${cpubar cpu15 8,51}  ${cpubar cpu16 8,51}
+${cpubar cpu17 8,51}  ${cpubar cpu18 8,51}  ${cpubar cpu19 8,51}  
+${voffset -5}
+
+# -- GPU Monitor
+${voffset -5}${font Sans:size=8:Bold}GPU MONITOR${font} ${hr 2}
+${voffset -1}
+${alignr}${exec nvidia-smi --query-gpu=name --format=csv,noheader}
+${voffset -1}
+GPU Load:${alignr}${exec nvidia-smi -q -d UTILIZATION|grep Gpu|awk '{ print $3 }'}%  ${execbar nvidia-smi -q -d UTILIZATION|grep Gpu|awk '{ print $3 }'}
+MEM Load:${alignr}${exec ~/.conky/scripts/gpudata mem}%  ${execbar ~/.conky/scripts/gpudata mem}
+FAN RPM:${alignr}${exec ~/.conky/scripts/gpudata fan}%  ${execbar ~/.conky/scripts/gpudata fan}
+GPU MEM Used: ${alignr}${execi 5 nvidia-settings -q [gpu:0]/UsedDedicatedGPUMemory -t} / ${exec nvidia-settings -q [gpu:0]/TotalDedicatedGPUMemory -t} MiB
+GPU / MEM Freq: ${alignr}${nvidia gpufreq} / ${nvidia memfreq}
+GPU Temp:${alignr}${nvidia temp} °C
+${voffset -5}
+
+# -- HDD usage
+${font Sans:size=8:Bold}HDD${font} ${hr 2}
+${voffset -5}
+Root: ${alignr}${fs_used_perc /}%  ${fs_bar 8,120 /}
+Home: ${alignr}${fs_used_perc /home}%  ${fs_bar 8,120 /home}
+Daten: ${alignr}${fs_used_perc /media/daten}%  ${fs_bar 8,120 /media/daten}
+Daten2: ${alignr}${fs_used_perc /media/daten2}%  ${fs_bar 8,120 /media/daten2}
+Downloads: ${alignr}${fs_used_perc /media/downloads}%  ${fs_bar 8,120 /media/downloads}
+${voffset -5}
+
+# -- Network
+${voffset -5}${font Sans:size=8:Bold}NETWORK${font} ${hr 2}
+${voffset -7}
+DL: ${downspeed wlo1}${alignr}${upspeed wlo1} :UL 
+${color2}${downspeedgraph wlo1 25,108 aaaaaa aaaaaa 18750 -t}${alignr}${upspeedgraph wlo1 25,108 aaaaaa aaaaaa 730}${color}
+IP Intern: ${alignr}${addrwlo1}
+IP Extern: ${alignr}${execi 3600 wget -q -O /dev/stdout http://checkip.dyndns.org/ | cut -d : -f 2- | cut -d \< -f -1}
+${voffset -1}
+
+# -- Process View
+${voffset -4} ${font Sans:size=8:Bold}PROCESSES${font} ${hr 2}
+${voffset -5}
+NAME $alignr PID     CPU     RAM
+${top name 1}${alignr}${top pid 1}   ${top cpu 1}   ${top mem 1}
+${top name 2}${alignr}${top pid 2}   ${top cpu 2}   ${top mem 2}
+${top name 3}${alignr}${top pid 3}   ${top cpu 3}   ${top mem 3}
+${top name 4}${alignr}${top pid 4}   ${top cpu 4}   ${top mem 4}
+${top name 5}${alignr}${top pid 5}   ${top cpu 5}   ${top mem 5}
+${top name 6}${alignr}${top pid 6}   ${top cpu 6}   ${top mem 6}
+${top name 7}${alignr}${top pid 7}   ${top cpu 7}   ${top mem 7}
+${top name 8}${alignr}${top pid 8}   ${top cpu 8}   ${top mem 8}
+${top name 9}${alignr}${top pid 9}   ${top cpu 9}   ${top mem 9}
+${top name 10}${alignr}${top pid 10}   ${top cpu 10}   ${top mem 10}
+]]
